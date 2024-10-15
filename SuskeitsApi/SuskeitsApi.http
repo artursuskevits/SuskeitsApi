@@ -1,0 +1,6 @@
+@SuskeitsApi_HostAddress = http://localhost:5057
+
+GET {{SuskeitsApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
