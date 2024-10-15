@@ -6,7 +6,7 @@ namespace SuskeitsApi.Controllers
 {
     [Route("[controller]")]
     [ApiController]
-    public class ToodeController : ControllerBase
+    public class KasutajaController : ControllerBase
     {
         private static Kasutaja _kasutaja = new Kasutaja(1, "KoolaLover", "123ABC", "Vladlen","Semenov");
 
