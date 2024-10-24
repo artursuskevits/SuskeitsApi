@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SuskeitsApi.Models;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace SuskeitsApi.Controllers
 {
@@ -7,6 +9,7 @@ namespace SuskeitsApi.Controllers
     [ApiController]
     public class TootedController : ControllerBase
     {
+        private readonly SuskeitsDbContext _context;
         private static List<Toode> _tooted = new()
         {
             new Toode(1,"Koola", 1.5, true),
@@ -37,13 +40,24 @@ namespace SuskeitsApi.Controllers
             _tooted.RemoveAt(index);
             return "Kustutatud!";
         }
+        public TootedController(SuskeitsDbContext context)
+        {
+            _context = context;
+        }
 
         // POST https://localhost:7198/tooted/lisa/1/Coca/1.5/true
         [HttpPost("lisa/{id}/{nimi}/{hind}/{aktiivne}")]
-        public List<Toode> Add(int id, string nimi, double hind, bool aktiivne)
+        public async Task<List<Toode>> Add(int id, string nimi, double hind, bool aktiivne)
         {
             Toode toode = new Toode(id, nimi, hind, aktiivne);
+
+            // Add to the in-memory list
             _tooted.Add(toode);
+
+            // Insert into the XAMPP MySQL database
+            await _context.Tooted.AddAsync(toode);
+            await _context.SaveChangesAsync();
+
             return _tooted;
         }
 

@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SuskeitsApi.Models;
 using System.Text.Json;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace SuskeitsApi.Controllers
 {
@@ -8,12 +10,13 @@ namespace SuskeitsApi.Controllers
     [ApiController]
     public class KasutajadController : Controller
     {
-
+        private readonly SuskeitsDbContext _context;
         private readonly HttpClient _httpClient;
 
-        public KasutajadController(HttpClient httpClient)
+        public KasutajadController(HttpClient httpClient, SuskeitsDbContext context)
         {
             _httpClient = httpClient;
+            _context = context;
         }
         private static List<Kasutaja> _tooted = new()
         {
@@ -48,12 +51,20 @@ namespace SuskeitsApi.Controllers
 
         // POST https://localhost:7198/tooted/lisa/1/Coca/1.5/true
         [HttpPost("lisa/{id}/{nimickamee}/{parool}/{nimi}/{perenimi}")]
-        public List<Kasutaja> Add(int id, string nimickamee, string parool,string nimi, string perenimi)
+        public async Task<List<Kasutaja>> Add(int id, string nimickamee, string parool, string nimi, string perenimi)
         {
-            Kasutaja toode = new Kasutaja(id, nimickamee,parool, nimi, perenimi);
-            _tooted.Add(toode);
+            Kasutaja kasutaja = new Kasutaja(id, nimickamee, parool, nimi, perenimi);
+
+            // Add to the in-memory list
+            _tooted.Add(kasutaja);
+
+            // Insert into the XAMPP MySQL database
+            await _context.Kasutajad.AddAsync(kasutaja);
+            await _context.SaveChangesAsync();
+
             return _tooted;
         }
+
 
         [HttpPost("lisa2")]
         public List<Kasutaja> Add2(int id, string nimickamee, string parool, string nimi, string perenimi)
