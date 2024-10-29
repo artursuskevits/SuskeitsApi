@@ -18,13 +18,14 @@ namespace SuskeitsApi.Controllers
             _httpClient = httpClient;
             _context = context;
         }
+
         private static List<Kasutaja> _tooted = new()
         {
-            new Kasutaja(1, "KoolaLover", "123ABC", "Vladlen","Semenov"),
-            new Kasutaja (2, "KoolaLover", "123ABC", "Vladlen", "Ivanov"),
-            new Kasutaja (3, "KoolaLover", "123ABC", "Vladlen", "Oleksandrov"),
-            new Kasutaja (4, "KoolaLover", "123ABC", "Vladlen", "olegov"),
-            new Kasutaja (5, "KoolaLover", "123ABC", "Vladlen", "Mikitin")
+            new Kasutaja(1, "KoolaLover", "123ABC", "Vladlen", "Semenov"),
+            new Kasutaja(2, "KoolaLover", "123ABC", "Vladlen", "Ivanov"),
+            new Kasutaja(3, "KoolaLover", "123ABC", "Vladlen", "Oleksandrov"),
+            new Kasutaja(4, "KoolaLover", "123ABC", "Vladlen", "Olegov"),
+            new Kasutaja(5, "KoolaLover", "123ABC", "Vladlen", "Mikitin")
         };
 
         // GET https://localhost:7198/tooted
@@ -55,16 +56,13 @@ namespace SuskeitsApi.Controllers
         {
             Kasutaja kasutaja = new Kasutaja(id, nimickamee, parool, nimi, perenimi);
 
-            // Add to the in-memory list
             _tooted.Add(kasutaja);
 
-            // Insert into the XAMPP MySQL database
             await _context.Kasutajad.AddAsync(kasutaja);
             await _context.SaveChangesAsync();
 
             return _tooted;
         }
-
 
         [HttpPost("lisa2")]
         public List<Kasutaja> Add2(int id, string nimickamee, string parool, string nimi, string perenimi)
@@ -73,6 +71,7 @@ namespace SuskeitsApi.Controllers
             _tooted.Add(toode);
             return _tooted;
         }
+
         [HttpGet("tooted")]
         public async Task<List<Toode>> GetTootedFromAnotherApi()
         {
@@ -84,7 +83,5 @@ namespace SuskeitsApi.Controllers
 
             return tooted;
         }
-
-
     }
 }

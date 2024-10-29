@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using SuskeitsApi;
 using SuskeitsApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
