@@ -24,6 +24,7 @@ namespace SuskeitsApi.Controllers
             var kasutaja = await _context.Kasutajad
                 .Include(k => k.KasutajaTooted) // Include the user's products through the join entity
                     .ThenInclude(kt => kt.Toode)
+                .AsNoTracking()
                 .FirstOrDefaultAsync(k => k.Id == userId);
 
             if (kasutaja == null)
@@ -31,7 +32,17 @@ namespace SuskeitsApi.Controllers
                 return NotFound("Kasutaja not found.");
             }
 
-            var products = kasutaja.KasutajaTooted.Select(kt => kt.Toode).ToList();
+            // Map to a DTO to avoid circular reference issues
+            var products = kasutaja.KasutajaTooted
+                .Select(kt => new
+                {
+                    Id = kt.Toode.Id,
+                    Name = kt.Toode.Name,
+                    Price = kt.Toode.Price,
+                    IsActive = kt.Toode.IsActive
+                })
+                .ToList();
+
             return Ok(products);
         }
 
@@ -67,7 +78,7 @@ namespace SuskeitsApi.Controllers
             _context.KasutajaTooded.Add(kasutajaToode);
             await _context.SaveChangesAsync();
 
-            return Ok(toode);
+            return Ok(new { toode.Id, toode.Name, toode.Price, toode.IsActive });
         }
 
         // DELETE https://localhost:7198/KasutajaToode/delete-product/{productId}

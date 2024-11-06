@@ -3,6 +3,7 @@ using SuskeitsApi.Models;
 using System.Text.Json;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace SuskeitsApi.Controllers
 {
@@ -19,59 +20,65 @@ namespace SuskeitsApi.Controllers
             _context = context;
         }
 
-        private static List<Kasutaja> _tooted = new()
-        {
-            new Kasutaja(1, "KoolaLover", "123ABC", "Vladlen", "Semenov"),
-            new Kasutaja(2, "KoolaLover", "123ABC", "Vladlen", "Ivanov"),
-            new Kasutaja(3, "KoolaLover", "123ABC", "Vladlen", "Oleksandrov"),
-            new Kasutaja(4, "KoolaLover", "123ABC", "Vladlen", "Olegov"),
-            new Kasutaja(5, "KoolaLover", "123ABC", "Vladlen", "Mikitin")
-        };
-
-        // GET https://localhost:7198/tooted
+        // GET https://localhost:7198/kasutajad
         [HttpGet]
-        public List<Kasutaja> Get()
+        public async Task<List<Kasutaja>> Get()
         {
-            return _tooted;
+            return await _context.Kasutajad.ToListAsync(); // Fetch users from database
         }
 
-        // DELETE https://localhost:7198/tooted/kustuta/0
+        // DELETE https://localhost:7198/kasutajad/kustuta/{index}
         [HttpDelete("kustuta/{index}")]
-        public List<Kasutaja> Delete(int index)
+        public async Task<IActionResult> Delete(int index)
         {
-            _tooted.RemoveAt(index);
-            return _tooted;
+            var kasutaja = await _context.Kasutajad.FindAsync(index);
+            if (kasutaja == null)
+            {
+                return NotFound("User not found.");
+            }
+
+            _context.Kasutajad.Remove(kasutaja);
+            await _context.SaveChangesAsync();
+            return Ok(await _context.Kasutajad.ToListAsync());
         }
 
         [HttpDelete("kustuta2/{index}")]
-        public string Delete2(int index)
+        public async Task<IActionResult> Delete2(int index)
         {
-            _tooted.RemoveAt(index);
-            return "Kustutatud!";
+            var kasutaja = await _context.Kasutajad.FindAsync(index);
+            if (kasutaja == null)
+            {
+                return NotFound("User not found.");
+            }
+
+            _context.Kasutajad.Remove(kasutaja);
+            await _context.SaveChangesAsync();
+            return Ok("Kustutatud!");
         }
 
-        // POST https://localhost:7198/tooted/lisa/1/Coca/1.5/true
+        // POST https://localhost:7198/kasutajad/lisa/{id}/{nimickamee}/{parool}/{nimi}/{perenimi}
         [HttpPost("lisa/{id}/{nimickamee}/{parool}/{nimi}/{perenimi}")]
         public async Task<List<Kasutaja>> Add(int id, string nimickamee, string parool, string nimi, string perenimi)
         {
-            Kasutaja kasutaja = new Kasutaja(id, nimickamee, parool, nimi, perenimi);
-
-            _tooted.Add(kasutaja);
-
+            var kasutaja = new Kasutaja(id, nimickamee, parool, nimi, perenimi);
             await _context.Kasutajad.AddAsync(kasutaja);
             await _context.SaveChangesAsync();
 
-            return _tooted;
+            return await _context.Kasutajad.ToListAsync(); // Return updated list from database
         }
 
+        // Optional additional post method
         [HttpPost("lisa2")]
-        public List<Kasutaja> Add2(int id, string nimickamee, string parool, string nimi, string perenimi)
+        public async Task<List<Kasutaja>> Add2(int id, string nimickamee, string parool, string nimi, string perenimi)
         {
-            Kasutaja toode = new Kasutaja(id, nimickamee, parool, nimi, perenimi);
-            _tooted.Add(toode);
-            return _tooted;
+            var kasutaja = new Kasutaja(id, nimickamee, parool, nimi, perenimi);
+            await _context.Kasutajad.AddAsync(kasutaja);
+            await _context.SaveChangesAsync();
+
+            return await _context.Kasutajad.ToListAsync();
         }
 
+        // This method retrieves products from another API endpoint
         [HttpGet("tooted")]
         public async Task<List<Toode>> GetTootedFromAnotherApi()
         {
